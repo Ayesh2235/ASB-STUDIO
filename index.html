@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASB Movies</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .cinematic-fallback {
+            background: radial-gradient(circle at 50% 10%, #4a0404 0%, #141414 50%, #000000 100%);
+        }
+
+        .netflix-badge {
+            background: linear-gradient(135deg, #e50914, #b00710);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .glass-panel {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .movie-card-zoom:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            z-index: 20;
+        }
+    </style>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { netflixRed: '#e50914', netflixDark: '#141414', } } } }
+    </script>
+</head>
+
+<body class="bg-netflixDark text-white overflow-hidden" id="body">
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-[100] transform translate-x-full transition-transform duration-300 font-bold">
+        Message
+    </div>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen"
+        class="fixed inset-0 bg-[#000000] flex flex-col justify-center items-center z-50 transition-opacity duration-1000">
+        <h1 class="text-6xl md:text-8xl brand-title mb-10 text-netflixRed">ASB STUDIO</h1>
+        <div class="classic-loader"></div>
+    </div>
+
+    <!-- Onboarding Screen (Netflix Style Landing) -->
+    <div id="onboarding-screen" class="hidden fixed inset-0 z-40 overflow-y-auto bg-black text-white">
+        <!-- Hero Background -->
+        <div class="absolute inset-0 z-0 bg-[#000] border-b-[8px] border-[#222] min-h-[90vh]">
+            <!-- Highly robust Netflix CDN URLs for exact official collage -->
+            <img src="https://assets.nflxext.com/ffe/siteui/vlv3/21a8ba09-4a61-44f8-8e2e-70e949c00c6f/LK-en-20240722-POP_SIGNUP_TWO_WEEKS-perspective_WEB_a02796dc-b778-4db8-8b9e-bb91ae4e84b7_large.jpg"
+                onerror="this.src='https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-fa792621b870/a86f9d78-c0b9-4a0b-93fd-c54dcedd1b46/US-en-20240311-popsignuptwoweeks-perspective_alpha_website_medium.jpg'"
+                class="w-full h-full object-cover opacity-50 mix-blend-overlay" crossorigin="anonymous">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80"></div>
+            <div class="absolute inset-0 bg-black/40"></div>
+        </div>
+
+        <!-- Top Nav -->
+        <div class="absolute top-0 w-full px-6 sm:px-32 py-6 flex justify-between items-center z-50">
+            <h1 class="text-3xl md:text-[2.6rem] font-bold text-netflixRed brand-title tracking-tight">ASB MOVIES</h1>
+            <div class="flex gap-4">
+                <select
+                    class="hidden sm:block bg-black/40 border border-gray-500 text-white px-4 py-1.5 rounded outline-none font-medium text-sm">
+                    <option>English</option>
+                    <option>Sinhala</option>
+                </select>
+                <button onclick="skipOnboarding()"
+                    class="bg-netflixRed text-white px-4 py-1.5 font-bold rounded shadow hover:bg-red-700 transition text-sm">Sign
+                    In</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div
+            class="min-h-[90vh] flex flex-col items-center justify-center p-6 relative z-10 text-center max-w-4xl mx-auto pt-24">
+            <h2 class="text-4xl sm:text-[3.5rem] font-extrabold mb-4 drop-shadow-2xl font-sans leading-tight">Unlimited
+                movies, TV shows, and more</h2>
+            <p class="text-lg sm:text-[1.5rem] mb-6 font-medium drop-shadow-lg" id="onboard-desc">Watch anywhere. Cancel
+                anytime.</p>
+
+            <h3 class="text-base sm:text-[1.25rem] font-normal mb-4 drop-shadow">Ready to watch? Enter your email to
+                create or restart your membership.</h3>
+
+            <div class="w-full max-w-2xl flex flex-col sm:flex-row gap-2 items-center justify-center mt-2">
+                <div class="relative w-full">
+                    <input type="email" id="onboard-email"
+                        class="w-full bg-black/60 border border-gray-500 text-white rounded px-4 pt-6 pb-2 outline-none focus:border-white focus:ring-2 focus:ring-white peer transition"
+                        placeholder=" " required />
+                    <label for="onboard-email"
+                        class="absolute text-gray-400 font-medium duration-300 transform -translate-y-2 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2 text-lg">Email
+                        address</label>
+                </div>
+                <button onclick="skipOnboarding()"
+                    class="w-full sm:w-auto bg-netflixRed hover:bg-red-700 text-2xl font-bold py-3 sm:py-3.5 px-8 rounded shadow flex items-center justify-center gap-2 transition duration-200 shrink-0">Get
+                    Started <i class="fa-solid fa-chevron-right text-lg"></i></button>
+            </div>
+        </div>
+
+        <div class="bg-black py-16 px-6 relative z-10 text-white text-center border-b-[8px] border-[#222]">
+            <h2 class="text-3xl sm:text-5xl font-extrabold mb-8">Frequently Asked Questions</h2>
+            <div class="max-w-4xl mx-auto flex flex-col gap-2">
+                <div class="w-full bg-[#2d2d2d] hover:bg-[#414141] transition p-6 sm:text-2xl font-medium text-left cursor-pointer flex justify-between items-center"
+                    onclick="showToast('ASB Movies is a streaming platform that offers a wide variety of TV shows, movies, and more.')">
+                    What is ASB Movies? <i class="fa-solid fa-plus font-light text-4xl"></i></div>
+                <div class="w-full bg-[#2d2d2d] hover:bg-[#414141] transition p-6 sm:text-2xl font-medium text-left cursor-pointer flex justify-between items-center"
+                    onclick="showToast('Watch on your smartphone, tablet, Smart TV, or laptop, all for one fixed monthly fee.')">
+                    How much does it cost? <i class="fa-solid fa-plus font-light text-4xl"></i></div>
+            </div>
+            <p class="mt-12 mb-4 text-gray-300 text-lg">Ready to watch? Enter your email to create or restart your
+                membership.</p>
+            <button onclick="skipOnboarding()"
+                class="bg-netflixRed hover:bg-red-700 text-xl font-bold py-3 px-8 rounded shadow transition">Get
+                Started</button>
+        </div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="hidden fixed inset-0 z-40 overflow-y-auto bg-black relative">
+        <!-- Background Cover Image -->
+        <div class="absolute inset-0 z-0 bg-[#000]">
+            <img src="https://assets.nflxext.com/ffe/siteui/vlv3/21a8ba09-4a61-44f8-8e2e-70e949c00c6f/LK-en-20240722-POP_SIGNUP_TWO_WEEKS-perspective_WEB_a02796dc-b778-4db8-8b9e-bb91ae4e84b7_large.jpg"
+                onerror="this.src='https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-fa792621b870/a86f9d78-c0b9-4a0b-93fd-c54dcedd1b46/US-en-20240311-popsignuptwoweeks-perspective_alpha_website_medium.jpg'"
+                class="w-full h-full object-cover opacity-50 mix-blend-overlay" crossorigin="anonymous">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80"></div>
+        </div>
+
+        <!-- Logo -->
+        <div class="absolute top-0 left-0 p-6 sm:px-10 py-6 z-50">
+            <h1 class="text-4xl md:text-[2.6rem] font-bold text-netflixRed brand-title tracking-tight">ASB MOVIES</h1>
+        </div>
+
+        <div class="min-h-screen flex flex-col items-center justify-center p-4 relative z-10 pt-24 pb-32">
+            <div class="w-full max-w-[450px] bg-black/80 px-10 py-16 sm:px-16 sm:py-16 rounded shadow-2xl">
+                <h2 class="text-white text-3xl font-bold mb-8">Sign In</h2>
+                <form onsubmit="handleAuth(event)" class="space-y-4">
+                    <div class="relative">
+                        <input type="email" id="email"
+                            class="w-full bg-[#333] text-white rounded px-4 pt-6 pb-2 border border-transparent outline-none focus:bg-[#454545] peer"
+                            placeholder=" " required />
+                        <label for="email"
+                            class="absolute text-gray-400 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-medium">Email
+                            or mobile number</label>
+                    </div>
+
+                    <div class="relative">
+                        <input type="password" id="password"
+                            class="w-full bg-[#333] text-white rounded px-4 pt-6 pb-2 border border-transparent outline-none focus:bg-[#454545] peer"
+                            placeholder=" " required />
+                        <label for="password"
+                            class="absolute text-gray-400 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-medium">Password</label>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-netflixRed hover:bg-red-700 text-white font-bold py-3.5 mt-6 rounded transition duration-200 text-base">Sign
+                        In</button>
+
+                    <div class="flex justify-between items-center text-[13px] text-gray-400 mt-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember"
+                                class="mr-2 rounded bg-[#333] border-none accent-gray-400" checked>
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <a href="#" class="hover:underline">Forgot password?</a>
+                    </div>
+                </form>
+
+                <div class="mt-8 sm:mt-16 text-gray-400">
+                    <p class="mb-4">New to ASB Movies? <a href="#"
+                            class="text-white hover:underline font-medium hover:text-white transition">Sign up now.</a>
+                    </p>
+                    <button onclick="guestLogin()"
+                        class="w-full border border-gray-500 hover:border-gray-200 hover:text-white text-gray-300 py-3 rounded font-bold transition duration-200 focus:outline-none bg-black/40">Sign
+                        in as Guest</button>
+                    <p class="text-[13px] mt-6 leading-snug">This page is protected by Google reCAPTCHA to ensure you're
+                        not a bot. <a href="#" class="text-blue-600 hover:underline">Learn more.</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 w-full bg-black/80 px-6 sm:px-32 py-8 text-gray-400 text-[13px] z-50">
+            <p class="mb-6">Questions? Contact sandipaboawatta@gmail.com</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl font-medium">
+                <a href="#" class="hover:underline">FAQ</a>
+                <a href="#" class="hover:underline">Help Center</a>
+                <a href="#" class="hover:underline">Terms of Use</a>
+                <a href="#" class="hover:underline">Privacy</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proifle Selection -->
+    <div id="profile-view"
+        class="view hidden fixed inset-0 z-50 bg-netflixDark flex flex-col justify-center items-center">
+        <h1 class="text-4xl text-white font-medium mb-12">Who's watching?</h1>
+        <div class="flex flex-wrap justify-center gap-8" id="profiles-container"></div>
+        <button id="manage-profiles-toggle" onclick="toggleEditProfilesMode()"
+            class="mt-16 border border-gray-500 text-gray-500 px-6 py-2 uppercase hover:text-white hover:border-white transition font-medium">Manage
+            Profiles</button>
+    </div>
+
+    <!-- Profile Edit Modal -->
+    <div id="profile-modal" class="hidden fixed inset-0 z-[60] bg-black/95 flex justify-center items-center px-4">
+        <div class="bg-[#141414] p-8 max-w-sm w-full rounded border border-gray-600 shadow-2xl relative">
+            <h2 id="profile-modal-title" class="text-3xl text-white font-bold mb-8 text-center">Edit Profile</h2>
+            <div class="flex flex-col items-center mb-6">
+                <label for="profile-pic-input" class="cursor-pointer relative group">
+                    <img id="profile-modal-pic"
+                        src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
+                        class="w-32 h-32 rounded object-cover shadow-lg border-2 border-transparent group-hover:border-white transition">
+                    <div
+                        class="absolute inset-0 bg-black/50 flex justify-center items-center opacity-0 group-hover:opacity-100 transition rounded">
+                        <i class="fa-solid fa-camera text-white text-3xl"></i>
+                    </div>
+                </label>
+                <input type="file" id="profile-pic-input" class="hidden" accept="image/*"
+                    onchange="handleProfilePicQueue(this)">
+            </div>
+            <input type="text" id="profile-name-input" placeholder="Name"
+                class="w-full bg-[#333] text-white px-4 py-4 rounded mb-4 outline-none font-medium text-lg focus:border-white border border-transparent transition">
+
+            <div class="flex items-center mb-8 gap-3 justify-center">
+                <input type="checkbox" id="profile-kids-input" class="w-6 h-6 accent-netflixRed cursor-pointer">
+                <label for="profile-kids-input" class="text-gray-300 text-lg cursor-pointer">Kids Profile</label>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="saveProfile()"
+                    class="flex-1 bg-white text-black font-bold py-3 rounded hover:bg-gray-200 transition text-lg">Save</button>
+                <button onclick="closeProfileModal()"
+                    class="flex-1 border border-gray-500 text-gray-300 py-3 rounded hover:border-white hover:text-white transition font-medium text-lg">Cancel</button>
+            </div>
+            <button id="delete-profile-btn" onclick="deleteEditingProfile()"
+                class="w-full mt-6 bg-transparent text-gray-500 hover:text-red-500 font-bold py-2 rounded transition">Delete
+                Profile</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden h-screen w-full flex flex-col pt-16">
+        <!-- Navbar -->
+        <nav class="fixed top-0 w-full z-40 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-4 px-6 flex justify-between items-center transition-colors duration-300"
+            id="navbar">
+            <div class="flex items-center gap-8">
+                <h1 class="text-3xl font-bold text-netflixRed cursor-pointer brand-title tracking-tight"
+                    onclick="navigate('home')">ASB MOVIES</h1>
+                <div class="hidden md:flex gap-4 text-sm font-medium text-gray-300">
+                    <a href="#" class="text-white hover:text-gray-300 transition" onclick="navigate('home')">Home</a>
+                    <a href="#" class="hover:text-white transition" onclick="navigate('browse')">Movies</a>
+                    <a href="#" class="hover:text-white transition" onclick="navigate('mylist')">My List</a>
+                </div>
+            </div>
+            <div class="flex gap-6 items-center">
+                <button onclick="navigate('search')" class="text-white hover:text-gray-300 transition"><i
+                        class="fa-solid fa-search text-xl"></i></button>
+                <div class="relative group cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <img id="nav-profile-pic"
+                            src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
+                            class="w-10 h-10 rounded border-2 border-transparent group-hover:border-white transition">
+                        <i
+                            class="fa-solid fa-caret-down text-white text-xs group-hover:rotate-180 transition duration-300"></i>
+                    </div>
+                    <div class="absolute right-0 mt-0 pt-4 w-48 hidden group-hover:block z-50">
+                        <div
+                            class="bg-black/95 border border-gray-800 rounded shadow-2xl flex flex-col text-sm text-gray-300">
+                            <button class="px-4 py-3 text-left hover:underline hover:text-white flex items-center gap-2"
+                                onclick="navigate('profile')">
+                                <i class="fa-solid fa-pen"></i> Manage Profiles
+                            </button>
+                            <button class="px-4 py-3 text-left hover:underline hover:text-white flex items-center gap-2"
+                                onclick="navigate('downloads')">
+                                <i class="fa-solid fa-download"></i> Smart Downloads
+                            </button>
+                            <hr class="border-gray-800">
+                            <button class="px-4 py-4 text-center hover:underline hover:text-white font-bold"
+                                onclick="logout()">
+                                Sign out of ASB
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main id="app-content" class="flex-1 overflow-y-auto pb-20">
+            <!-- Home View -->
+            <div id="home-view" class="view">
+                <div id="hero-banner" class="w-full h-[60vh] relative bg-black"></div>
+                <div id="category-rows" class="p-4 space-y-8"></div>
+            </div>
+            <div id="search-view" class="view hidden p-20 text-center">
+                <h2 class="text-2xl mt-10 mb-6">Search Results</h2>
+                <div class="max-w-xl mx-auto relative mb-8">
+                    <i class="fa-solid fa-search absolute left-4 top-4 text-gray-500"></i>
+                    <input type="text" id="search-input" onkeyup="handleSearch()"
+                        class="w-full bg-[#333] text-white px-12 py-3 rounded outline-none border border-gray-700 focus:border-white transition"
+                        placeholder="Search for action, comedy, or your favorite title...">
+                </div>
+                <div id="search-results" class="flex flex-wrap gap-4 justify-center"></div>
+                <div id="search-empty" class="mt-4 text-gray-500">Find your favorite movies...</div>
+            </div>
+            <div id="browse-view" class="view hidden p-20 text-center">
+                <h2 class="text-2xl mt-10">Browse Movies</h2>
+                <div class="my-4"><select id="genre-select" onchange="filterBrowse()"
+                        class="bg-[#333] text-white px-4 py-2 rounded">
+                        <option>All</option>
+                        <option>Action</option>
+                        <option>Sci-Fi</option>
+                        <option>Comedy</option>
+                        <option>Sri Lankan Movies</option>
+                        <option>Horror</option>
+                        <option>Romance</option>
+                        <option>Documentary</option>
+                        <option>TV Shows</option>
+                        <option>Anime</option>
+                    </select></div>
+                <div id="browse-results" class="flex flex-wrap gap-4 justify-center mt-6"></div>
+            </div>
+            <div id="details-view" class="view hidden">
+                <div id="detail-backdrop" class="w-full h-[50vh] bg-cover bg-center relative">
+                    <div class="absolute inset-0 bg-gradient-to-t from-netflixDark to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 sm:left-12 max-w-lg z-10">
+                        <h2 class="text-4xl sm:text-6xl font-bold mb-2 shadow-lg" id="detail-title"></h2>
+                        <div class="flex gap-4 text-sm text-gray-300 font-bold mb-4 drop-shadow items-center">
+                            <span id="detail-year"></span>
+                            <span class="border border-gray-500 px-1.5 text-xs text-white uppercase" id="detail-age"></span>
+                            <span class="text-green-500" id="detail-rating"></span>
+                            <span id="detail-genre"></span>
+                        </div>
+                        <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-8 drop-shadow-md max-w-2xl"
+                            id="detail-desc"></p>
+
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <button onclick="playVideo()"
+                                class="bg-white text-black px-6 sm:px-10 py-3 rounded hover:bg-gray-300 transition shadow-xl font-bold text-lg focus:outline-none flex items-center justify-center gap-2"><i
+                                    class="fa-solid fa-play"></i> Play Main</button>
+
+                            <button onclick="watchTrailer()"
+                                class="glass-panel text-white px-6 sm:px-8 py-3 rounded hover:bg-gray-700 transition shadow font-bold text-lg focus:outline-none flex items-center justify-center gap-2"><i
+                                    class="fa-solid fa-clapperboard"></i> Trailer</button>
+
+                            <div class="flex gap-2 items-center ml-2">
+                                <button onclick="toggleMyList()"
+                                    class="border-2 border-gray-500 text-gray-300 w-12 h-12 flex justify-center items-center rounded-full hover:border-white hover:text-white transition focus:outline-none"
+                                    id="detail-list-icon"><i class="fa-solid fa-plus text-xl"></i></button>
+
+                                <button onclick="showToast('Liked!')"
+                                    class="border-2 border-gray-500 text-gray-300 w-12 h-12 flex justify-center items-center rounded-full hover:border-green-500 hover:text-green-500 transition focus:outline-none"
+                                    title="Like"><i class="fa-solid fa-thumbs-up text-lg"></i></button>
+
+                                <button onclick="downloadMovie()"
+                                    class="border-2 border-gray-500 text-gray-300 w-12 h-12 flex flex-col justify-center items-center rounded-full hover:border-white hover:text-white transition focus:outline-none"
+                                    title="Download"><i class="fa-solid fa-arrow-down text-lg"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intro View (Film Screen before Main Movie) -->
+            <div id="intro-view" class="view hidden fixed inset-0 z-[110] bg-black flex flex-col justify-center items-center">
+                <div class="absolute inset-0 z-0">
+                    <video id="intro-video" class="w-full h-full object-cover opacity-80" playsinline></video>
+                </div>
+                <button onclick="closeIntro()" class="absolute top-8 left-8 text-white text-4xl hover:text-gray-400 z-[120] focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
+                <!-- Controls Overlay -->
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-24 h-24 mb-6 animate-pulse">
+                         <h1 class="text-4xl font-bold text-netflixRed brand-title">ASB</h1>
+                    </div>
+                    <h2 class="text-white text-3xl font-bold mb-8 uppercase tracking-widest drop-shadow-2xl" id="intro-movie-title"></h2>
+                    <div class="flex gap-4">
+                        <button id="skip-intro-btn" class="bg-white/20 hover:bg-white/40 text-white border border-white/50 px-8 py-3 rounded-md font-bold text-lg backdrop-blur-md transition flex items-center gap-2">
+                             Skip Intro <i class="fa-solid fa-angles-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute bottom-10 text-gray-500 font-bold tracking-widest text-sm uppercase opacity-50">
+                    Now Previewing Main Content
+                </div>
+            </div>
+
+            <!-- Player View -->
+            <div id="player-view"
+                class="view hidden fixed inset-0 z-[100] bg-black flex flex-col justify-center items-center">
+                <button onclick="closePlayer()"
+                    class="absolute top-8 left-8 text-white text-4xl hover:text-gray-400 z-[60] focus:outline-none drop-shadow-md"><i
+                        class="fa-solid fa-arrow-left"></i></button>
+
+                <video id="hls-video" controls autoplay class="w-full h-full object-contain focus:outline-none">
+                    <track id="video-subs" kind="subtitles" srclang="en" label="English" default>
+                </video>
+
+                <!-- Advanced Netflix Controls -->
+                <div class="absolute top-8 right-8 z-[60] flex gap-4">
+                    <button onclick="changePlaybackSpeed()" id="speed-btn"
+                        class="glass-panel text-white font-bold py-2 px-4 rounded shadow-lg hover:bg-white hover:text-black transition">1.0x
+                        Speed</button>
+                </div>
+
+                <!-- Netflix Custom Subtitle Loader UI -->
+                <div class="absolute bottom-24 right-8 z-[60] sm:bottom-28 sm:right-12">
+                    <label for="local-sub-input"
+                        class="bg-black/80 border border-gray-600 hover:bg-netflixRed hover:border-netflixRed cursor-pointer text-white px-6 py-3 rounded-full uppercase tracking-wider text-[11px] font-extrabold flex items-center gap-2 transition duration-300 shadow-xl">
+                        <i class="fa-solid fa-closed-captioning text-lg"></i> Load Subtitle
+                    </label>
+                    <input type="file" id="local-sub-input" class="hidden" accept=".vtt,.srt"
+                        onchange="loadLocalSubtitle(this)">
+                </div>
+            </div>
+
+            <!-- My List View -->
+            <div id="mylist-view" class="view hidden p-8 sm:p-20 text-center min-h-[70vh]">
+                <h2 class="text-2xl sm:text-3xl font-bold mt-10 mb-8 border-b border-gray-800 pb-4 inline-block px-8">My
+                    List</h2>
+                <div id="mylist-results" class="flex gap-4 flex-wrap justify-center"></div>
+                <div id="mylist-empty" class="mt-12 text-gray-500 hidden flex-col items-center">
+                    <i class="fa-solid fa-bookmark text-6xl mb-4 text-gray-800"></i>
+                    <p>Your list is empty. Add movies you love!</p>
+                </div>
+            </div>
+
+            <!-- Downloads View -->
+            <div id="downloads-view" class="view hidden p-8 sm:p-20 min-h-[70vh]">
+                <h2 class="text-2xl sm:text-3xl font-bold mt-10 mb-8 px-4 text-center">Smart Downloads</h2>
+                <div id="downloads-results" class="space-y-4 max-w-3xl mx-auto"></div>
+                <div id="downloads-empty" class="mt-12 text-gray-500 hidden flex flex-col items-center">
+                    <i class="fa-solid fa-download text-6xl mb-4 text-gray-800"></i>
+                    <p>No downloads available.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer
+            class="bg-black p-10 text-center text-gray-500 text-sm border-t border-gray-800 shrink-0 z-10 w-full relative">
+            <p>&copy; 2026 ASB Movies. All rights reserved.</p>
+            <p class="mt-2 text-gray-400 font-medium">Contact me: <a href="mailto:sandipaboawatta@gmail.com"
+                    class="text-netflixRed hover:underline">sandipaboawatta@gmail.com</a></p>
+            <div class="mt-4 flex justify-center gap-6 font-bold">
+                <a href="admin.html" class="hover:text-white transition flex items-center gap-1"><i
+                        class="fa-solid fa-lock text-xs"></i> Admin Portal</a>
+                <a href="#" class="hover:text-white transition">Help Center</a>
+                <a href="#" class="hover:text-white transition">Terms of Use</a>
+            </div>
+        </footer>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <nav id="bottom-nav"
+            class="md:hidden fixed bottom-0 w-full bg-black flex justify-around p-4 border-t border-gray-800">
+            <button onclick="navigate('home')"><i class="fa-solid fa-house"></i></button>
+            <button onclick="navigate('search')"><i class="fa-solid fa-search"></i></button>
+            <button onclick="navigate('browse')"><i class="fa-solid fa-film"></i></button>
+            <button onclick="navigate('mylist')"><i class="fa-regular fa-bookmark"></i></button>
+        </nav>
+    </div>
+
+    <!-- Libs and Custom Logic -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

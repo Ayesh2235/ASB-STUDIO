@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASB Movies - Premium Admin Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            background-color: #141414;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #141414;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body id="admin-body">
+
+    <!-- Login Screen -->
+    <div id="admin-login"
+        class="min-h-screen flex items-center justify-center bg-[url('https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-fa792628b082/13a0e633-88bc-4672-9d33-bcbe87af2f07/US-en-20240311-popsignuptwoweeks-perspective_alpha_website_small.jpg')] bg-cover relative">
+        <div class="absolute inset-0 bg-black/80"></div>
+        <div class="relative z-10 glass-panel p-10 rounded-xl shadow-2xl w-full max-w-md">
+            <h1 class="text-4xl font-bold text-center text-[#e50914] mb-2 tracking-wider">ASB STUDIO</h1>
+            <p class="text-center text-gray-400 mb-8 font-medium">Administrator Login</p>
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="mb-6 relative">
+                    <label class="block text-gray-400 mb-2 text-sm font-semibold">Username</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-4 top-3.5 text-gray-500"></i>
+                        <input type="text" id="admin-user"
+                            class="w-full bg-[#222] text-white pl-10 pr-4 py-3 rounded border border-gray-700 focus:outline-none focus:border-[#e50914] transition"
+                            placeholder="Enter Username" required>
+                    </div>
+                </div>
+                <div class="mb-8 relative">
+                    <label class="block text-gray-400 mb-2 text-sm font-semibold">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-3.5 text-gray-500"></i>
+                        <input type="password" id="admin-pass"
+                            class="w-full bg-[#222] text-white pl-10 pr-4 py-3 rounded border border-gray-700 focus:outline-none focus:border-[#e50914] transition"
+                            placeholder="Enter Password" required>
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full bg-[#e50914] py-3.5 rounded font-bold text-lg hover:bg-red-700 transition shadow-[0_0_15px_rgba(229,9,20,0.4)]">Access
+                    Portal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="admin-dashboard" class="hidden min-h-screen flex flex-col pt-20">
+
+        <nav class="glass-panel fixed top-0 w-full z-50 border-b border-gray-800">
+            <div class="max-w-[1600px] mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold text-[#e50914] tracking-wider">ASB <span
+                            class="text-white">STUDIO</span></h1>
+                </div>
+                <div class="flex gap-6 items-center">
+                    <a href="index.html" target="_blank"
+                        class="text-gray-400 hover:text-white transition flex items-center gap-2 font-medium">
+                        <i class="fa-solid fa-desktop"></i> View App
+                    </a>
+                    <button onclick="logoutAdmin()"
+                        class="text-gray-400 hover:text-[#e50914] transition ml-2 font-bold"><i
+                            class="fa-solid fa-right-from-bracket mr-2"></i> Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <div
+            class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-8 relative z-10">
+
+            <div class="w-full lg:w-[400px] xl:w-[450px] shrink-0">
+                <div class="glass-panel p-6 rounded-xl sticky top-28 h-[85vh] overflow-y-auto no-scrollbar">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-white" id="form-title">
+                        <i class="fa-solid fa-cloud-arrow-up text-[#e50914]"></i> Upload New Content
+                    </h2>
+
+                    <form id="movie-form" onsubmit="saveMovie(event)">
+                        <input type="hidden" id="movie-id">
+
+                        <!-- Media Uploads Section -->
+                        <div class="mb-6 p-4 rounded-lg bg-[#222] border border-gray-700">
+                            <h3 class="text-sm font-bold text-[#e50914] mb-4 uppercase tracking-wider">Storage (Gallery
+                                Media)</h3>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2 text-gray-300">Film Poster
+                                    (Image)</label>
+                                <label
+                                    class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer bg-[#181818] hover:bg-[#2a2a2a] transition overflow-hidden relative group">
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6"
+                                        id="poster-preview-container">
+                                        <i class="fa-regular fa-image text-3xl text-gray-500 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Click to select</p>
+                                    </div>
+                                    <img id="poster-preview"
+                                        class="hidden absolute inset-0 w-full h-full object-cover z-20">
+                                    <input type="file" id="poster-file" class="hidden" accept="image/*"
+                                        onchange="previewFile(this, 'poster-preview')">
+                                </label>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2 text-gray-300">Trailer File (Teaser/Intro)</label>
+                                <label
+                                    class="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer bg-[#181818] hover:bg-[#2a2a2a] transition relative">
+                                    <div class="flex flex-col items-center justify-center text-center">
+                                        <i class="fa-solid fa-clapperboard text-xl text-[#e50914] mb-1"></i>
+                                        <p class="text-sm text-gray-400" id="trailer-file-name"><span
+                                                class="font-semibold text-white">Select Trailer</span></p>
+                                    </div>
+                                    <input type="file" id="trailer-file" class="hidden" accept="video/mp4,video/*"
+                                        onchange="updateFileName(this, 'trailer-file-name', 'Trailer Selected')">
+                                </label>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-2 text-gray-300">Movie File (Video)</label>
+                                <label
+                                    class="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer bg-[#181818] hover:bg-[#2a2a2a] transition relative">
+                                    <div class="flex flex-col items-center justify-center text-center">
+                                        <i class="fa-solid fa-film text-xl text-[#e50914] mb-1"></i>
+                                        <p class="text-sm text-gray-400" id="video-file-name"><span
+                                                class="font-semibold text-white">Select Video</span> from Gallery</p>
+                                    </div>
+                                    <input type="file" id="video-file" class="hidden" accept="video/mp4,video/*"
+                                        onchange="updateFileName(this, 'video-file-name', 'Video Selected')">
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-gray-300">Subtitle File (.srt /
+                                    .vtt)</label>
+                                <label
+                                    class="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer bg-[#181818] hover:bg-[#2a2a2a] transition relative">
+                                    <div class="flex flex-col items-center justify-center text-center">
+                                        <i class="fa-solid fa-closed-captioning text-xl text-[#e50914] mb-1"></i>
+                                        <p class="text-sm text-gray-400" id="sub-file-name"><span
+                                                class="font-semibold text-white">Select Subtitle</span> from Gallery</p>
+                                    </div>
+                                    <input type="file" id="sub-file" class="hidden" accept=".vtt,.srt"
+                                        onchange="updateFileName(this, 'sub-file-name', 'Subtitles Added')">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Meta -->
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-1">Title</label>
+                            <input type="text" id="title"
+                                class="w-full bg-[#333] border-none text-white p-2 rounded outline-none" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-1">Description</label>
+                            <textarea id="description"
+                                class="w-full bg-[#333] border-none text-white p-2 rounded outline-none h-20 resize-none"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <input type="text" id="genre"
+                                class="bg-[#333] border-none text-white p-2 rounded outline-none" placeholder="Genre">
+                            <select id="category"
+                                class="bg-[#333] border-none text-white p-2 rounded outline-none w-full">
+                                <option>Action</option>
+                                <option>Comedy</option>
+                                <option>Drama</option>
+                                <option>Horror</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <input type="number" id="year"
+                                class="bg-[#333] border-none text-white p-2 rounded outline-none" placeholder="Year"
+                                value="2024">
+                            <input type="number" step="0.1" id="rating"
+                                class="bg-[#333] border-none text-white p-2 rounded outline-none" placeholder="Rating"
+                                value="8.0">
+                            <select id="ageRating" class="bg-[#333] border-none text-white p-2 rounded outline-none">
+                                <option value="U">U (All ages)</option>
+                                <option value="U/A 7+">U/A 7+</option>
+                                <option value="U/A 13+">U/A 13+</option>
+                                <option value="U/A 16+">U/A 16+</option>
+                                <option value="A 18+">A 18+</option>
+                            </select>
+                        </div>
+
+                        <div
+                            class="mb-6 p-4 rounded-lg bg-[#222] border border-gray-700 flex flex-wrap gap-4 justify-between">
+                            <label
+                                class="flex items-center gap-2 cursor-pointer text-sm font-semibold hover:text-white transition">
+                                <input type="checkbox" id="isNew" class="w-4 h-4 accent-[#e50914]"> New
+                            </label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer text-sm font-semibold hover:text-white transition">
+                                <input type="checkbox" id="isTrending" class="w-4 h-4 accent-[#e50914]"> Trending
+                            </label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer text-sm font-semibold hover:text-white transition">
+                                <input type="checkbox" id="isTop10" class="w-4 h-4 accent-[#e50914]"> Top 10
+                            </label>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-[#e50914] text-white font-bold text-lg py-3 rounded shadow"
+                            id="submit-btn">Upload to ASB</button>
+                        <button type="button"
+                            class="w-full bg-transparent border border-gray-600 font-bold py-2 rounded mt-2 hidden"
+                            id="cancel-btn" onclick="resetForm()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- List View -->
+            <div class="flex-1">
+                <div class="glass-panel p-6 rounded-xl min-h-[80vh]">
+                    <div
+                        class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-700 pb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold flex items-center gap-3">Content Library <span
+                                    class="bg-[#222] text-[#e50914] text-sm px-3 py-1 rounded" id="movie-count">0
+                                    Films</span></h2>
+                        </div>
+                        <input type="text" id="admin-search" placeholder="Search library..."
+                            class="w-full sm:w-64 bg-[#181818] border border-gray-700 p-2 rounded outline-none"
+                            oninput="loadMovies()">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="movie-grid"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="db.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>
